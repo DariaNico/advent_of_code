@@ -43,6 +43,8 @@
 # ANSWER: 2331
 #
 # --- Part Two ---
+# https://adventofcode.com/2023/day/2#part2
+#
 # The Elf says they've stopped producing snow because they aren't getting any
 # water! He isn't sure why the water stopped; however, he can show you how to
 # get to the water source to check it out for yourself. It's just up ahead!
@@ -53,20 +55,21 @@
 #
 # Again consider the example games from earlier:
 #
+# ```
 # Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
 # Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
 # Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
 # Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
 # Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
+# ```
 #
-# In game 1, the game could have been played with as few as 4 red, 2 green, and
+# - In game 1, the game could have been played with as few as 4 red, 2 green, and
 # 6 blue cubes. If any color had even one fewer cube, the game would have been
 # impossible.
-#
-# Game 2 could have been played with a minimum of 1 red, 3 green, and 4 blue cubes.
-# Game 3 must have been played with at least 20 red, 13 green, and 6 blue cubes.
-# Game 4 required at least 14 red, 3 green, and 15 blue cubes.
-# Game 5 needed no fewer than 6 red, 3 green, and 2 blue cubes in the bag.
+# - Game 2 could have been played with a minimum of 1 red, 3 green, and 4 blue cubes.
+# - Game 3 must have been played with at least 20 red, 13 green, and 6 blue cubes.
+# - Game 4 required at least 14 red, 3 green, and 15 blue cubes.
+# - Game 5 needed no fewer than 6 red, 3 green, and 2 blue cubes in the bag.
 #
 # The power of a set of cubes is equal to the numbers of red, green, and blue
 # cubes multiplied together. The power of the minimum set of cubes in game 1 is
@@ -75,11 +78,27 @@
 #
 # For each game, find the minimum set of cubes that must have been present.
 # What is the sum of the power of these sets?
-#
+# ANSWER: 71585
 #
 
+# TODO: Refactor this to use oop
+#class Game
+#  attr_reader :draws, :power, :min_cubes
+#  def initialize
+#    @draws = []
+#    @min_cubes = { red: 0, green: 0, blue: 0}
+#
+#  end
+#
+#  def calculate_power
+#  end
+#
+#  def valid_for?(red:, green: blue:)
+#  end
+#end
+
 class GameBag
-  attr_accessor :initial_cubes, :inputs, :games, :illegal_games, :legal_games
+  attr_reader :initial_cubes, :inputs, :games, :illegal_games, :legal_games, :power_games
 
   def initialize(filename:, initial_cubes: { red: 12, green: 13, blue: 14 })
     @initial_cubes = initial_cubes
@@ -87,18 +106,25 @@ class GameBag
     @games = {}
     @illegal_games = []
     @legal_games = []
+    @power_games = {}
 
-    parse_inputs
+    parse_input
     check_games
   end
 
   def sum_legal_games
-    legal_games.reduce(&:+)
+    sum_games.call(legal_games)
+  end
+
+  def sum_power_games
+    power_games.reduce(0) do |sum, power_game|
+      sum += power_game.last[:power]
+    end
   end
 
   private
 
-  def parse_inputs
+  def parse_input
     inputs.each do |game|
       game_number, game_parts = split_and_strip(':').call(game)
       game_number = split_and_strip(' ').call(game_number).last.to_i
@@ -122,14 +148,30 @@ class GameBag
   def check_games
     games.each do |game_number, game_parts|
       game_parts.each do |game_part|
-        if !game_part_valid?(game_part)
-          @illegal_games << game_number
-          next
-        end
+        check_legality(game_number, game_part)
+        check_min_cubes_for(game_number, game_part)
       end
 
       unless illegal_games.include?(game_number)
         @legal_games << game_number
+      end
+    end
+  end
+
+  def check_legality(game_number, game_part)
+    if !game_part_valid?(game_part)
+      @illegal_games << game_number
+    end
+  end
+
+  def check_min_cubes_for(game_number, game_part)
+    @power_games[game_number] ||= { cubes: { red: 0, green: 0, blue: 0 }, power: 0 }
+
+    [:red, :green, :blue].each do |color_sym|
+      if game_part[color_sym] && game_part[color_sym] > power_games[game_number][:cubes][color_sym]
+        @power_games[game_number][:cubes][color_sym] = game_part[color_sym]
+        @power_games[game_number][:power] =
+          power_games[game_number][:cubes].values.reduce(&:*)
       end
     end
   end
@@ -164,5 +206,9 @@ class GameBag
 
   def split_and_strip(split_char)
     Proc.new { |string| string.split(split_char).map(&:strip) }
+  end
+
+  def sum_games
+    Proc.new { |games| games.reduce(&:+) }
   end
 end
