@@ -84,10 +84,9 @@
 # TODO: Refactor this to use oop
 class Game
   attr_reader :draws, :game_number #:power, :min_cubes
-  def initialize(game_number:, draws:)
-    @draws = []
-    #@min_cubes = { red: 0, green: 0, blue: 0 }
-
+  def initialize(game_number:, draws: [])
+    @game_number = game_number
+    @draws = draws
   end
 
   #def calculate_power
