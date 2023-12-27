@@ -82,25 +82,25 @@
 #
 
 # TODO: Refactor this to use oop
-#class Game
-#  attr_reader :draws, :power, :min_cubes
-#  def initialize
-#    @draws = []
-#    @min_cubes = { red: 0, green: 0, blue: 0}
-#
-#  end
-#
-#  def calculate_power
-#  end
-#
-#  def valid_for?(red:, green: blue:)
-#  end
-#end
+class Game
+  attr_reader :draws, :game_number #:power, :min_cubes
+  def initialize(game_number:, draws:)
+    @draws = []
+    #@min_cubes = { red: 0, green: 0, blue: 0 }
+
+  end
+
+  #def calculate_power
+  #end
+
+  #def valid_for?
+  #end
+end
 
 class GameBag
   attr_reader :initial_cubes, :inputs, :games, :illegal_games, :legal_games, :power_games
 
-  def initialize(filename:, initial_cubes: { red: 12, green: 13, blue: 14 })
+  def initialize(filename: '2_input.txt', initial_cubes: { red: 12, green: 13, blue: 14 })
     @initial_cubes = initial_cubes
     @inputs = File.readlines(filename).map(&:chomp)
     @games = {}
