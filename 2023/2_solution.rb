@@ -84,9 +84,20 @@
 # TODO: Refactor this to use oop
 class Game
   attr_reader :draws, :game_number #:power, :min_cubes
+
   def initialize(game_number:, draws: [])
     @game_number = game_number
     @draws = draws
+  end
+
+  def attributes
+    attr_hash = Hash.new
+
+    instance_variables.each do |ivar|
+      attr_hash[ivar.to_s.delete('@').to_sym] = instance_variable_get(ivar)
+    end
+
+    attr_hash
   end
 
   #def calculate_power
