@@ -30,9 +30,10 @@ describe Game do
   end
 
   describe "#attributes" do
-    let(:expected_attr_hash) { { game_number: game_number, draws: draws } }
 
     it "returns a hash with all instance variables as keys and their values" do
+      expected_attr_hash = { game_number: game_number, draws: draws }
+
       expect(game.attributes).to eq(expected_attr_hash)
     end
   end
