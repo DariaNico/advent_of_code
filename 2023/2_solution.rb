@@ -132,7 +132,29 @@ class GameBag
     end
   end
 
+  def parse_game_inputs!
+    inputs.each do |game|
+      game_number, raw_draws = split_and_strip(':').call(game)
+      game_number = split_and_strip(' ').call(game_number).last.to_i
+      raw_draws = split_and_strip(';').call(raw_draws)
+
+      draws = raw_draws.map do |raw_draw|
+        draw = {}
+        drawn_blocks = split_and_strip(',').call(raw_draw)
+        drawn_blocks.each do |drawn_block|
+          number_drawn, color_drawn = drawn_block.split(' ')
+          draw[color_drawn.to_sym] = number_drawn.to_i
+        end
+
+        draw
+      end
+
+      @games[game_number] ||= Game.new(game_number: game_number, draws: draws)
+    end
+  end
+
   private
+
 
   def parse_input
     inputs.each do |game|
