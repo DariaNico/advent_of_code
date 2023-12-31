@@ -112,14 +112,14 @@ class GameBag
 
   def initialize(filename: '2_input.txt', initial_cubes: { red: 12, green: 13, blue: 14 })
     @initial_cubes = initial_cubes
-    @inputs = File.readlines(filename).map(&:chomp)
+    @inputs = File.readlines(filename).map(&:strip)
     @games = {}
     @illegal_games = []
     @legal_games = []
     @power_games = {}
 
-    parse_input
-    check_games
+    #parse_input
+    #check_games
   end
 
   def sum_legal_games
@@ -186,16 +186,16 @@ class GameBag
     end
   end
 
-  def check_game_parts(game_parts)
-    game_parts.each do |game_part|
-      is_valid = game_part_valid?(game_part)
-      if !is_valid
-        puts "Invalid game:"
-        puts "check: #{initial_cubes}"
-        puts "gamepart: #{game_part}"
-      end
-    end
-  end
+  #def check_game_parts(game_parts)
+  #  game_parts.each do |game_part|
+  #    is_valid = game_part_valid?(game_part)
+  #    if !is_valid
+  #      puts "Invalid game:"
+  #      puts "check: #{initial_cubes}"
+  #      puts "gamepart: #{game_part}"
+  #    end
+  #  end
+  #end
 
   def game_part_valid?(game_part)
     valid = true
