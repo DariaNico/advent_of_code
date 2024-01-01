@@ -119,8 +119,11 @@ class Game
     min_valid_hash
   end
 
-  #def calculate_power
-  #end
+  def power
+    minimum_valid_cubes.reduce(1) do |pow, color_and_num|
+      pow = pow * color_and_num.last
+    end
+  end
 
   #def valid_for?
   #end

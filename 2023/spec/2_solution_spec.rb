@@ -81,6 +81,38 @@ describe Game do
       end
     end
   end
+
+  describe "#power" do
+    let(:draws) { [min_valid_cube_mock] }
+
+    before(:each) do
+      allow(Game).to receive(:minimum_valid_cubes).and_return(min_valid_cube_mock)
+    end
+
+    context "given all minimum_valid_cubes are 1" do
+      let(:min_valid_cube_mock) { { red: 1, green: 1, blue: 1 } }
+
+      it "calculates the power out to be 1" do
+        expect(game.power).to eq(1)
+      end
+    end
+
+    context "given minimum_valid_cubes are greater than 1" do
+      let(:min_valid_cube_mock) { { red: 2, green: 3, blue: 10 } }
+
+      it "calculates the power out to be their multiplied power together when values greater than 1" do
+        expect(game.power).to eq(60)
+      end
+    end
+
+    context "given minimum_valid_cubes that contain a zero for a game" do
+      let(:min_valid_cube_mock) { { red: 1, green: 0, blue: 1 } }
+
+      it "calculates the power out to be 0" do
+        expect(game.power).to eq(0)
+      end
+    end
+  end
 end
 
 # Improvement: Maybe make this color agnostic?
