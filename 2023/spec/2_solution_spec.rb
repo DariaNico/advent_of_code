@@ -29,7 +29,7 @@ describe Game do
       end
 
       it "creates a game with accessible cube_colors" do
-        expect(game.cube_colors).to eq(draws)
+        expect(game.cube_colors).to eq(cube_colors)
       end
     end
   end
