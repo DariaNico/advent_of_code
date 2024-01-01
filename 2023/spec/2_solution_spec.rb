@@ -37,13 +37,53 @@ describe Game do
   describe "#attributes" do
 
     it "returns a hash with all instance variables as keys and their values" do
-      expected_attr_hash = { game_number: game_number, draws: draws }
+      expected_attr_hash = { game_number: game_number, draws: draws, cube_colors: cube_colors }
 
       expect(game.attributes).to eq(expected_attr_hash)
     end
   end
+
+  describe "#minimum_valid_cubes" do
+    context "given a game with multiple draws" do
+      context "and every draw has all the colors" do
+        let(:draws) {
+          [
+            { blue: 2, green: 12, red: 1 },
+            { red: 5, green: 1, blue: 2 },
+            { red: 50, green: 11, blue: 22 },
+          ]
+        }
+
+        it "returns the min cube count needed for the game to be valid" do
+          expect(game.minimum_valid_cubes).to eq({ red: 50, green: 12, blue: 22 })
+        end
+      end
+
+      context "and some draws don't have all rgb colors" do
+        let(:draws) {
+          [
+            { green: 12, red: 1 },
+            { red: 5 },
+          ]
+        }
+
+        it "returns the min cube count needed for the game to be valid (with 0s as needed" do
+          expect(game.minimum_valid_cubes).to eq({ red: 5, green: 12, blue: 0 })
+        end
+      end
+    end
+
+    context "given a game with no draws" do
+      let(:draws) { [] }
+
+      it "returns 0 for all rgb colors" do
+        expect(game.minimum_valid_cubes).to eq({ red: 0, green: 0, blue: 0 })
+      end
+    end
+  end
 end
 
+# Improvement: Maybe make this color agnostic?
 describe GameBag do
   let(:filename) { "test_text.txt" }
   let(:initial_cubes) { { red: 3, green: 3, blue: 3 } }

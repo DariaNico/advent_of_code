@@ -101,6 +101,24 @@ class Game
     attr_hash
   end
 
+  def minimum_valid_cubes
+    min_valid_hash = Hash.new
+    cube_colors.each do |color|
+      color = color.to_sym
+      min_valid_hash[color] ||= 0
+
+      draws.each do |draw|
+        draw_color_count = draw[color] || 0
+
+        if min_valid_hash[color] < draw_color_count
+          min_valid_hash[color] = draw_color_count
+        end
+      end
+    end
+
+    min_valid_hash
+  end
+
   #def calculate_power
   #end
 
