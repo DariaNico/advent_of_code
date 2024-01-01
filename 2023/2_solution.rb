@@ -83,12 +83,13 @@
 
 # TODO: Refactor this to use oop
 class Game
-  attr_reader :draws, :game_number, :cube_colors
+  attr_reader :draws, :game_number, :cube_colors, :minimum_valid_cubes
 
   def initialize(game_number:, draws: [], cube_colors: [:red, :green, :blue])
     @game_number = game_number
     @draws = draws
     @cube_colors = cube_colors
+    calculate_minimum_valid_cubes!
   end
 
   def attributes
@@ -101,22 +102,20 @@ class Game
     attr_hash
   end
 
-  def minimum_valid_cubes
-    min_valid_hash = Hash.new
+  def calculate_minimum_valid_cubes!
+    @minimum_valid_cubes = Hash.new
     cube_colors.each do |color|
       color = color.to_sym
-      min_valid_hash[color] ||= 0
+      @minimum_valid_cubes[color] ||= 0
 
       draws.each do |draw|
         draw_color_count = draw[color] || 0
 
-        if min_valid_hash[color] < draw_color_count
-          min_valid_hash[color] = draw_color_count
+        if minimum_valid_cubes[color] < draw_color_count
+          @minimum_valid_cubes[color] = draw_color_count
         end
       end
     end
-
-    min_valid_hash
   end
 
   def power

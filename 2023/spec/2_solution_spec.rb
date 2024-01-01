@@ -16,7 +16,7 @@ describe Game do
       let(:draws) {
         [
           { red: 1, green: 2, blue: 3 },
-          { red: 0, green: 12, blue: 10 },
+          { green: 1, blue: 1 },
         ]
       }
 
@@ -31,19 +31,25 @@ describe Game do
       it "creates a game with accessible cube_colors" do
         expect(game.cube_colors).to eq(cube_colors)
       end
+
+      it "creates a game with accessible minimum_valid_cubes" do
+        expect(game.minimum_valid_cubes).to eq({ red: 1, green: 2, blue: 3 })
+      end
     end
   end
 
   describe "#attributes" do
-
     it "returns a hash with all instance variables as keys and their values" do
-      expected_attr_hash = { game_number: game_number, draws: draws, cube_colors: cube_colors }
+      expected_attr_hash = { game_number: game_number,
+                             draws: draws,
+                             cube_colors: cube_colors,
+                             minimum_valid_cubes: draws.first }
 
       expect(game.attributes).to eq(expected_attr_hash)
     end
   end
 
-  describe "#minimum_valid_cubes" do
+  describe "#calculate_minimum_valid_cubes!" do
     context "given a game with multiple draws" do
       context "and every draw has all the colors" do
         let(:draws) {
@@ -54,7 +60,8 @@ describe Game do
           ]
         }
 
-        it "returns the min cube count needed for the game to be valid" do
+        it "calculates the min cube count needed for the game to be valid and saves it in @minimum_valid_cubes" do
+          game.calculate_minimum_valid_cubes!
           expect(game.minimum_valid_cubes).to eq({ red: 50, green: 12, blue: 22 })
         end
       end
@@ -67,7 +74,8 @@ describe Game do
           ]
         }
 
-        it "returns the min cube count needed for the game to be valid (with 0s as needed" do
+        it "calculates the min cube count needed for the game to be valid (with 0s as needed) and saves it in @minimum_valid_cubes" do
+          game.calculate_minimum_valid_cubes!
           expect(game.minimum_valid_cubes).to eq({ red: 5, green: 12, blue: 0 })
         end
       end
@@ -77,6 +85,7 @@ describe Game do
       let(:draws) { [] }
 
       it "returns 0 for all rgb colors" do
+        game.calculate_minimum_valid_cubes!
         expect(game.minimum_valid_cubes).to eq({ red: 0, green: 0, blue: 0 })
       end
     end
@@ -163,6 +172,7 @@ describe GameBag do
           { red: 5, green: 1, blue: 4 },
         ],
         cube_colors: cube_colors,
+        minimum_valid_cubes: { red: 5, green: 2, blue: 4 },
       }
     }
     let(:expected_game_6_attrs) {
@@ -172,6 +182,7 @@ describe GameBag do
           { red: 15, green: 6, blue: 100 },
         ],
         cube_colors: cube_colors,
+        minimum_valid_cubes: { red: 15, green: 6, blue: 100 },
       }
     }
     let(:expected_game_7_attrs) {
@@ -181,6 +192,7 @@ describe GameBag do
           { red: 3, green: 12, blue: 16 },
         ],
         cube_colors: cube_colors,
+        minimum_valid_cubes: { red: 3, green: 12, blue: 16 },
       }
     }
 
@@ -208,6 +220,7 @@ describe GameBag do
             { red: 5, green: 1, blue: 4 },
           ],
           cube_colors: cube_colors,
+          minimum_valid_cubes: { red: 5, green: 2, blue: 4 },
         }
       }
       let(:expected_game_6_attrs) {
@@ -217,6 +230,7 @@ describe GameBag do
             { red: 15, green: 6, blue: 100 },
           ],
           cube_colors: cube_colors,
+          minimum_valid_cubes: { red: 15, green: 6, blue: 100 },
         }
       }
 
