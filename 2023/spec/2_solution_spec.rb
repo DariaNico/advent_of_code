@@ -7,7 +7,8 @@ describe Game do
       { red: 0, green: 1, blue: 10 },
     ]
   }
-  let(:game) { Game.new(game_number: game_number, draws: draws) }
+  let(:cube_colors) { [:red, :green, :blue] }
+  let(:game) { Game.new(game_number: game_number, draws: draws, cube_colors: cube_colors) }
 
   describe "#initialize" do
     context "given a game number and a draws array" do
@@ -25,6 +26,10 @@ describe Game do
 
       it "creates a game with accessible draws" do
         expect(game.draws).to eq(draws)
+      end
+
+      it "creates a game with accessible cube_colors" do
+        expect(game.cube_colors).to eq(draws)
       end
     end
   end
@@ -70,12 +75,14 @@ describe GameBag do
     end
   end
 
-  describe("#parse_game_inputs") do
+  describe("#parse_game_inputs!") do
     let(:file_input) { [
       "Game 5: 1 red, 2 green, 3 blue; 5 red, 4 blue, 1 green",
       "Game 7: 16 blue, 12 green, 3 red",
       "Game 6: 6 green, 15 red, 100 blue",
     ] }
+    let(:cube_colors) { [:red, :green, :blue] }
+
     let(:expected_game_5_attrs) {
       {
         game_number: 5,
@@ -83,6 +90,7 @@ describe GameBag do
           { red: 1, green: 2, blue: 3 },
           { red: 5, green: 1, blue: 4 },
         ],
+        cube_colors: cube_colors,
       }
     }
     let(:expected_game_6_attrs) {
@@ -91,6 +99,7 @@ describe GameBag do
         draws: [
           { red: 15, green: 6, blue: 100 },
         ],
+        cube_colors: cube_colors,
       }
     }
     let(:expected_game_7_attrs) {
@@ -99,6 +108,7 @@ describe GameBag do
         draws: [
           { red: 3, green: 12, blue: 16 },
         ],
+        cube_colors: cube_colors,
       }
     }
 
@@ -125,6 +135,7 @@ describe GameBag do
             { red: 1, green: 2, blue: 3 },
             { red: 5, green: 1, blue: 4 },
           ],
+          cube_colors: cube_colors,
         }
       }
       let(:expected_game_6_attrs) {
@@ -133,6 +144,7 @@ describe GameBag do
           draws: [
             { red: 15, green: 6, blue: 100 },
           ],
+          cube_colors: cube_colors,
         }
       }
 
