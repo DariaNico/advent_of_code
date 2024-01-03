@@ -127,11 +127,11 @@ end
 # Improvement: Maybe make this color agnostic?
 describe GameBag do
   let(:filename) { "test_text.txt" }
-  let(:initial_cubes) { { red: 3, green: 3, blue: 3 } }
+  let(:initial_cubes) { { red: 9, green: 9, blue: 9 } }
   let(:file_input) { [
     " Game 1: 1 red, 2 green, 3 blue; 5 red, 4 blue, 1 green; 2 green, 17 red, 6 blue; 5 green, 1 blue, 11 red; 18 red, 1 green, 14 blue; 8 blue",
     "  Game 2: 16 blue, 12 green, 3 red; 13 blue, 2 red, 8 green; 15 green, 3 red, 16 blue  ",
-    "Game 3: 6 green, 15 red; 1 green, 4 red, 7 blue; 9 blue, 7 red, 8 green ",
+    "Game 3: 6 green, 1 red; 1 green, 4 red, 7 blue; 9 blue, 7 red, 8 green ",
   ] }
   let(:game_bag) { GameBag.new(filename: filename, initial_cubes: initial_cubes) }
 
@@ -141,17 +141,35 @@ describe GameBag do
 
   describe "#initialize" do
     context "given valid arguments" do
+      let(:expected_raw_inputs) { [
+        "Game 1: 1 red, 2 green, 3 blue; 5 red, 4 blue, 1 green; 2 green, 17 red, 6 blue; 5 green, 1 blue, 11 red; 18 red, 1 green, 14 blue; 8 blue",
+        "Game 2: 16 blue, 12 green, 3 red; 13 blue, 2 red, 8 green; 15 green, 3 red, 16 blue",
+        "Game 3: 6 green, 1 red; 1 green, 4 red, 7 blue; 9 blue, 7 red, 8 green",
+      ] }
+
       it "creates a game bag with the given initial_cubes arg" do
         expect(game_bag.initial_cubes).to eq(initial_cubes)
       end
 
-      let(:expected_raw_inputs) { [
-        "Game 1: 1 red, 2 green, 3 blue; 5 red, 4 blue, 1 green; 2 green, 17 red, 6 blue; 5 green, 1 blue, 11 red; 18 red, 1 green, 14 blue; 8 blue",
-        "Game 2: 16 blue, 12 green, 3 red; 13 blue, 2 red, 8 green; 15 green, 3 red, 16 blue",
-        "Game 3: 6 green, 15 red; 1 green, 4 red, 7 blue; 9 blue, 7 red, 8 green",
-      ] }
       it "creates a GameBag with raw_inputs array of every line without trailing whitespaces" do
         expect(game_bag.inputs).to eq(expected_raw_inputs)
+      end
+
+      context "populating @games" do
+        it "populates @games with parse_game_inputs!" do
+          test_game_bag = GameBag.allocate
+          expect(test_game_bag).to receive(:parse_game_inputs!)
+          test_game_bag.send(:initialize, filename: filename)
+        end
+
+        it "correctly populates @games hash with int => Game" do
+          expect(game_bag.games.keys).to eq([1, 2, 3])
+          expect(game_bag.games.values.map(&:class)).to eq([Game, Game, Game])
+        end
+      end
+
+      it "populates @valid_game_numbers" do
+        expect(game_bag.valid_game_numbers).to eq([3])
       end
     end
   end
@@ -270,6 +288,33 @@ describe GameBag do
 
       it "is invalid and returns false" do
         expect(game_bag.valid_game?(game)).to be_falsey
+      end
+    end
+  end
+
+  describe "#find_valid_games!" do
+    context "given a mix of valid and invalid games in the game bag" do
+      let(:file_input) { [
+        "Game 2: 1 blue, 1 green, 1 red",
+        "Game 3: 2 green, 1 red, 1 blue",
+        "Game 5: 2 green, 2 red, 2 blue",
+        "Game 1: 100 red, 2 green, 3 blue; 5 red, 4 blue, 1 green",
+        "Game 4: 6 green, 15 red, 100 blue",
+      ] }
+      let(:initial_cubes) { { red: 2, green: 3, blue: 4 } }
+
+      it "adds the valid game_numbers to @valid_game_numbers sorted" do
+        game_bag.find_valid_games!
+
+        expect(game_bag.valid_game_numbers).to eq([2, 3, 5])
+      end
+
+      it "is idempotent" do
+        game_bag.find_valid_games!
+        game_bag.find_valid_games!
+        game_bag.find_valid_games!
+
+        expect(game_bag.valid_game_numbers).to eq([2, 3, 5])
       end
     end
   end

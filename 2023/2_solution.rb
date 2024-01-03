@@ -122,21 +122,19 @@ class Game
       pow = pow * color_and_num.last
     end
   end
-
-  #def valid_for?
-  #end
 end
 
 class GameBag
-  attr_reader :initial_cubes, :inputs, :games, :illegal_games, :legal_games, :power_games
+  attr_reader :initial_cubes, :inputs, :games, :valid_game_numbers
 
   def initialize(filename: '2_input.txt', initial_cubes: { red: 12, green: 13, blue: 14 })
     @initial_cubes = initial_cubes
     @inputs = File.readlines(filename).map(&:strip)
     @games = {}
-    @illegal_games = []
-    @legal_games = []
-    @power_games = {}
+    parse_game_inputs!
+
+    @valid_game_numbers = []
+    find_valid_games!
   end
 
   def parse_game_inputs!
@@ -158,6 +156,16 @@ class GameBag
 
       @games[game_number] ||= Game.new(game_number: game_number, draws: draws)
     end
+  end
+
+  def find_valid_games!
+    games.each do |game_number, game|
+      if !valid_game_numbers.include?(game_number) && valid_game?(game)
+        @valid_game_numbers << game_number
+      end
+    end
+
+    @valid_game_numbers.sort!
   end
 
   def valid_game?(game)
