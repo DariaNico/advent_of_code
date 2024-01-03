@@ -318,4 +318,29 @@ describe GameBag do
       end
     end
   end
+
+  describe "#sum_valid_game_numbers" do
+    let(:file_input) { [
+      "Game 1: 1 red, 2 green, 3 blue; 5 red, 4 blue, 1 green",
+      "Game 10: 16 blue, 1200 green, 3 red",
+      "Game 100: 6 green, 10 red, 10 blue",
+    ] }
+    let(:initial_cubes) { { red: 10, green: 10, blue: 10 } }
+
+    it "adds together the valid game's game_numbers" do
+      expect(game_bag.sum_valid_game_numbers).to eq(101)
+    end
+  end
+
+  describe "#sum_game_powers" do
+    let(:file_input) { [
+      "Game 100: 1 red, 2 green, 3 blue", # power = 6
+      "Game 1000: 2 blue, 2 green, 3 red", # power = 12
+      "Game 1: 3 green, 3 red, 10 blue", # power = 90
+    ] }
+
+    it "adds together the powers of all the games" do
+      expect(game_bag.sum_game_powers).to eq(108)
+    end
+  end
 end

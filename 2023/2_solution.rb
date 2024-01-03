@@ -178,13 +178,17 @@ class GameBag
     valid
   end
 
+  def sum_valid_game_numbers
+    valid_game_numbers.reduce(&:+)
+  end
+
+  def sum_game_powers
+    games.values.reduce(0) { |sum, game| sum += game.power }
+  end
+
   private
 
   def split_and_strip(split_char)
     Proc.new { |string| string.split(split_char).map(&:strip) }
-  end
-
-  def sum_games
-    Proc.new { |games| games.reduce(&:+) }
   end
 end
