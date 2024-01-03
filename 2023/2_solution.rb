@@ -174,29 +174,18 @@ class GameBag
     end
   end
 
+  def valid_game?(game)
+    valid = true
+
+    game.minimum_valid_cubes.each do |color, min_count|
+      valid = valid && initial_cubes[color] >= min_count
+    end
+
+    valid
+  end
+
   private
 
-
-  def parse_input
-    inputs.each do |game|
-      game_number, game_parts = split_and_strip(':').call(game)
-      game_number = split_and_strip(' ').call(game_number).last.to_i
-
-      game_parts = split_and_strip(';').call(game_parts)
-      game_parts.map! do |game_part|
-        block_breakdown = {}
-        drawn_blocks = split_and_strip(',').call(game_part)
-        drawn_blocks.each do |drawn_block|
-          number_drawn, color_drawn = drawn_block.split(' ')
-          block_breakdown[color_drawn.to_sym] = number_drawn.to_i
-        end
-
-        block_breakdown
-      end
-
-      @games[game_number] = game_parts
-    end
-  end
 
   def check_games
     games.each do |game_number, game_parts|

@@ -245,4 +245,32 @@ describe GameBag do
     end
   end
 
+  describe "#valid_game?" do
+    context "given a game with minimum_valid_cubes all less than initial_cubes" do
+      let(:game) { Game.new(game_number: 1, draws: [ { red: 1, green: 2, blue: 3 } ]) }
+      let(:initial_cubes) { { red: 2, green: 3, blue: 4 } }
+
+      it "is valid and returns true" do
+        expect(game_bag.valid_game?(game)).to be_truthy
+      end
+    end
+
+    context "given a game with minimum_valid_cubes equal to initial_cubes" do
+      let(:game) { Game.new(game_number: 1, draws: [ { red: 1, green: 2, blue: 3 } ]) }
+      let(:initial_cubes) { { red: 1, green: 2, blue: 3 } }
+
+      it "is invalid and returns false" do
+        expect(game_bag.valid_game?(game)).to be_truthy
+      end
+    end
+
+    context "given a game with some minimum_valid_cubes greater than initial_cubes" do
+      let(:game) { Game.new(game_number: 1, draws: [ { red: 1, green: 200, blue: 3 } ]) }
+      let(:initial_cubes) { { red: 1, green: 2, blue: 3 } }
+
+      it "is invalid and returns false" do
+        expect(game_bag.valid_game?(game)).to be_falsey
+      end
+    end
+  end
 end
