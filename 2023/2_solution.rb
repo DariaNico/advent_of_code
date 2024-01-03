@@ -81,7 +81,6 @@
 # ANSWER: 71585
 #
 
-# TODO: Refactor this to use oop
 class Game
   attr_reader :draws, :game_number, :cube_colors, :minimum_valid_cubes
 
@@ -138,19 +137,6 @@ class GameBag
     @illegal_games = []
     @legal_games = []
     @power_games = {}
-
-    #parse_input
-    #check_games
-  end
-
-  def sum_legal_games
-    sum_games.call(legal_games)
-  end
-
-  def sum_power_games
-    power_games.reduce(0) do |sum, power_game|
-      sum += power_game.last[:power]
-    end
   end
 
   def parse_game_inputs!
@@ -185,66 +171,6 @@ class GameBag
   end
 
   private
-
-
-  def check_games
-    games.each do |game_number, game_parts|
-      game_parts.each do |game_part|
-        check_legality(game_number, game_part)
-        check_min_cubes_for(game_number, game_part)
-      end
-
-      unless illegal_games.include?(game_number)
-        @legal_games << game_number
-      end
-    end
-  end
-
-  def check_legality(game_number, game_part)
-    if !game_part_valid?(game_part)
-      @illegal_games << game_number
-    end
-  end
-
-  def check_min_cubes_for(game_number, game_part)
-    @power_games[game_number] ||= { cubes: { red: 0, green: 0, blue: 0 }, power: 0 }
-
-    [:red, :green, :blue].each do |color_sym|
-      if game_part[color_sym] && game_part[color_sym] > power_games[game_number][:cubes][color_sym]
-        @power_games[game_number][:cubes][color_sym] = game_part[color_sym]
-        @power_games[game_number][:power] =
-          power_games[game_number][:cubes].values.reduce(&:*)
-      end
-    end
-  end
-
-  #def check_game_parts(game_parts)
-  #  game_parts.each do |game_part|
-  #    is_valid = game_part_valid?(game_part)
-  #    if !is_valid
-  #      puts "Invalid game:"
-  #      puts "check: #{initial_cubes}"
-  #      puts "gamepart: #{game_part}"
-  #    end
-  #  end
-  #end
-
-  def game_part_valid?(game_part)
-    valid = true
-
-    [:red, :green, :blue].each do |color_sym|
-      valid = valid && color_number_valid?(color_sym).call(game_part)
-    end
-
-    valid
-  end
-
-  def color_number_valid?(color_sym)
-    Proc.new do |game_part|
-      number_of_color_drawn = game_part[color_sym] || 0
-      number_of_color_drawn <= initial_cubes[color_sym]
-    end
-  end
 
   def split_and_strip(split_char)
     Proc.new { |string| string.split(split_char).map(&:strip) }
