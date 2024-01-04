@@ -81,134 +81,114 @@
 # ANSWER: 71585
 #
 
-# TODO: Refactor this to use oop
-#class Game
-#  attr_reader :draws, :power, :min_cubes
-#  def initialize
-#    @draws = []
-#    @min_cubes = { red: 0, green: 0, blue: 0}
-#
-#  end
-#
-#  def calculate_power
-#  end
-#
-#  def valid_for?(red:, green: blue:)
-#  end
-#end
+class Game
+  attr_reader :draws, :game_number, :cube_colors, :minimum_valid_cubes
+
+  def initialize(game_number:, draws: [], cube_colors: [:red, :green, :blue])
+    @game_number = game_number
+    @draws = draws
+    @cube_colors = cube_colors
+    calculate_minimum_valid_cubes!
+  end
+
+  def attributes
+    attr_hash = Hash.new
+
+    instance_variables.each do |ivar|
+      attr_hash[ivar.to_s.delete('@').to_sym] = instance_variable_get(ivar)
+    end
+
+    attr_hash
+  end
+
+  def calculate_minimum_valid_cubes!
+    @minimum_valid_cubes = Hash.new
+    cube_colors.each do |color|
+      color = color.to_sym
+      @minimum_valid_cubes[color] ||= 0
+
+      draws.each do |draw|
+        draw_color_count = draw[color] || 0
+
+        if minimum_valid_cubes[color] < draw_color_count
+          @minimum_valid_cubes[color] = draw_color_count
+        end
+      end
+    end
+  end
+
+  def power
+    minimum_valid_cubes.reduce(1) do |pow, color_and_num|
+      pow = pow * color_and_num.last
+    end
+  end
+end
 
 class GameBag
-  attr_reader :initial_cubes, :inputs, :games, :illegal_games, :legal_games, :power_games
+  attr_reader :initial_cubes, :inputs, :games, :valid_game_numbers
 
-  def initialize(filename:, initial_cubes: { red: 12, green: 13, blue: 14 })
+  def initialize(filename: '2_input.txt', initial_cubes: { red: 12, green: 13, blue: 14 })
     @initial_cubes = initial_cubes
-    @inputs = File.readlines(filename).map(&:chomp)
+    @inputs = File.readlines(filename).map(&:strip)
     @games = {}
-    @illegal_games = []
-    @legal_games = []
-    @power_games = {}
+    parse_game_inputs!
 
-    parse_input
-    check_games
+    @valid_game_numbers = []
+    find_valid_games!
   end
 
-  def sum_legal_games
-    sum_games.call(legal_games)
-  end
-
-  def sum_power_games
-    power_games.reduce(0) do |sum, power_game|
-      sum += power_game.last[:power]
-    end
-  end
-
-  private
-
-  def parse_input
+  def parse_game_inputs!
     inputs.each do |game|
-      game_number, game_parts = split_and_strip(':').call(game)
+      game_number, raw_draws = split_and_strip(':').call(game)
       game_number = split_and_strip(' ').call(game_number).last.to_i
+      raw_draws = split_and_strip(';').call(raw_draws)
 
-      game_parts = split_and_strip(';').call(game_parts)
-      game_parts.map! do |game_part|
-        block_breakdown = {}
-        drawn_blocks = split_and_strip(',').call(game_part)
+      draws = raw_draws.map do |raw_draw|
+        draw = {}
+        drawn_blocks = split_and_strip(',').call(raw_draw)
         drawn_blocks.each do |drawn_block|
           number_drawn, color_drawn = drawn_block.split(' ')
-          block_breakdown[color_drawn.to_sym] = number_drawn.to_i
+          draw[color_drawn.to_sym] = number_drawn.to_i
         end
 
-        block_breakdown
+        draw
       end
 
-      @games[game_number] = game_parts
+      @games[game_number] ||= Game.new(game_number: game_number, draws: draws)
     end
   end
 
-  def check_games
-    games.each do |game_number, game_parts|
-      game_parts.each do |game_part|
-        check_legality(game_number, game_part)
-        check_min_cubes_for(game_number, game_part)
-      end
-
-      unless illegal_games.include?(game_number)
-        @legal_games << game_number
+  def find_valid_games!
+    games.each do |game_number, game|
+      if !valid_game_numbers.include?(game_number) && valid_game?(game)
+        @valid_game_numbers << game_number
       end
     end
+
+    @valid_game_numbers.sort!
   end
 
-  def check_legality(game_number, game_part)
-    if !game_part_valid?(game_part)
-      @illegal_games << game_number
-    end
-  end
-
-  def check_min_cubes_for(game_number, game_part)
-    @power_games[game_number] ||= { cubes: { red: 0, green: 0, blue: 0 }, power: 0 }
-
-    [:red, :green, :blue].each do |color_sym|
-      if game_part[color_sym] && game_part[color_sym] > power_games[game_number][:cubes][color_sym]
-        @power_games[game_number][:cubes][color_sym] = game_part[color_sym]
-        @power_games[game_number][:power] =
-          power_games[game_number][:cubes].values.reduce(&:*)
-      end
-    end
-  end
-
-  def check_game_parts(game_parts)
-    game_parts.each do |game_part|
-      is_valid = game_part_valid?(game_part)
-      if !is_valid
-        puts "Invalid game:"
-        puts "check: #{initial_cubes}"
-        puts "gamepart: #{game_part}"
-      end
-    end
-  end
-
-  def game_part_valid?(game_part)
+  def valid_game?(game)
     valid = true
 
-    [:red, :green, :blue].each do |color_sym|
-      valid = valid && color_number_valid?(color_sym).call(game_part)
+    game.minimum_valid_cubes.each do |color, min_count|
+      valid = valid && initial_cubes[color] >= min_count
     end
 
     valid
   end
 
-  def color_number_valid?(color_sym)
-    Proc.new do |game_part|
-      number_of_color_drawn = game_part[color_sym] || 0
-      number_of_color_drawn <= initial_cubes[color_sym]
-    end
+  def sum_valid_game_numbers
+    valid_game_numbers.reduce(&:+)
   end
+
+  def sum_game_powers
+    games.values.reduce(0) { |sum, game| sum += game.power }
+  end
+
+  private
 
   def split_and_strip(split_char)
     Proc.new { |string| string.split(split_char).map(&:strip) }
-  end
-
-  def sum_games
-    Proc.new { |games| games.reduce(&:+) }
   end
 end
