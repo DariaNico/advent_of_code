@@ -28,3 +28,23 @@
 # Of course, the actual engine schematic is much larger. What is the sum of all of the part numbers in the engine schematic?
 #
 #
+class Schematic
+  attr_reader :engine_matrix
+
+  def initialize(filename = "3_input.txt")
+    @engine_matrix = File.readlines(filename).map { |row| row.strip.split('') }
+  end
+
+  def slot_type(string_slot)
+    case string_slot
+    when '.'
+      :blank
+    when /[0-9]/
+      :number
+    when /[a-zA-Z]/
+      :symbol
+    else
+      :symbol
+    end
+  end
+end
