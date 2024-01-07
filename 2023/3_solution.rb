@@ -43,10 +43,18 @@
 # of the part numbers in the engine schematic?
 
 class Schematic
-  attr_reader :raw_engine_matrix
+  attr_reader :raw_engine_matrix, :engine_matrix
 
   def initialize(filename = "3_input.txt")
     @raw_engine_matrix = File.readlines(filename).map { |row| row.strip.split('') }
+  end
+
+  def parse_engine_matrix!
+    @engine_matrix = raw_engine_matrix.each_with_index.map do |row, row_i|
+      row.each_with_index.map do |col, col_i|
+        SchematicCell.new(row: row_i, column: col_i, value: col)
+      end
+    end
   end
 end
 

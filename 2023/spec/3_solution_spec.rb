@@ -37,6 +37,19 @@ describe Schematic do
     end
   end
 
+  describe "#parse_engine_matrix!" do
+    it "sets engine_matrix to a matrix of SchematicCells based off raw_engine_matrix" do
+      schematic.parse_engine_matrix!
+      engine_matrix = schematic.engine_matrix
+
+      expect(engine_matrix.all? { |row| row.all? { |cell| cell.class == SchematicCell } }).
+        to be_truthy
+
+      expect(engine_matrix.map { |row| row.map { |cell| cell.value } }).
+        to eq(schematic.raw_engine_matrix)
+    end
+  end
+
 end
 
 describe SchematicCell do
