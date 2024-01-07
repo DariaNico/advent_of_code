@@ -43,28 +43,33 @@
 # of the part numbers in the engine schematic?
 
 class Schematic
-  attr_reader :raw_engine_matrix, :engine_matrix
+  attr_reader :raw_engine_matrix, :engine_matrix, :max_coordinate
 
   def initialize(filename = "3_input.txt")
     @raw_engine_matrix = File.readlines(filename).map { |row| row.strip.split('') }
+    @max_coordinate = [raw_engine_matrix.length - 1, raw_engine_matrix.first.length - 1]
   end
 
   def parse_engine_matrix!
     @engine_matrix = raw_engine_matrix.each_with_index.map do |row, row_i|
       row.each_with_index.map do |col, col_i|
-        SchematicCell.new(row: row_i, column: col_i, value: col)
+        SchematicCell.new(row: row_i,
+                          column: col_i,
+                          value: col,
+                          max_coordinate: max_coordinate)
       end
     end
   end
 end
 
 class SchematicCell
-  attr_reader :value, :row, :column, :cell_type
+  attr_reader :cell_type, :column, :max_coordinate, :row, :value
 
-  def initialize(row:, column:, value:)
-    @value = value
-    @row = row
+  def initialize(row:, column:, value:, max_coordinate:)
     @column = column
+    @max_coordinate = max_coordinate
+    @row = row
+    @value = value
   end
 
   def determine_cell_type!
@@ -78,5 +83,33 @@ class SchematicCell
                  else
                    :symbol
                  end
+  end
+
+  def coordinates
+    [row, column]
+  end
+
+  def row_neighbor_coordinates(neighbor_row = row)
+    ((column - 1)..(column + 1)).map do |neighbor_col|
+      if row_valid?(neighbor_row) && column_valid?(neighbor_col)
+        [neighbor_row, neighbor_col]
+      end
+    end.compact
+  end
+
+  def all_neighbor_coordinates
+    ((row - 1)..(row + 1)).map do |neighbor_row|
+      row_neighbor_coordinates(neighbor_row)
+    end.flatten(1)
+  end
+
+  private
+
+  def row_valid?(row_coord = row)
+    0 <= row_coord && row_coord <= max_coordinate.first
+  end
+
+  def column_valid?(column_coord = column)
+    0 <= column_coord && column_coord <= max_coordinate.last
   end
 end
