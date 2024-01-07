@@ -25,8 +25,8 @@ describe Schematic do
         "40.4%",
       ] }
 
-      it "creates @engine_matric with schematic characters in an array of string arrays" do
-        expect(schematic.engine_matrix).to eq([
+      it "creates @raw_engine_matrix with schematic characters in an array of string arrays" do
+        expect(schematic.raw_engine_matrix).to eq([
           [".", "1", ".", ".", "."],
           [".", ".", ".", "*", "."],
           ["6", "9", ".", ".", "."],
