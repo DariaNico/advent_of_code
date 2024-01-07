@@ -38,6 +38,13 @@ describe Schematic do
   end
 
   describe "#parse_engine_matrix!" do
+    let(:file_input) { [
+      ".1...",
+      "...*.",
+      "./...",
+      "40.4%",
+    ] }
+
     it "sets engine_matrix to a matrix of SchematicCells based off raw_engine_matrix" do
       schematic.parse_engine_matrix!
       engine_matrix = schematic.engine_matrix
@@ -49,14 +56,17 @@ describe Schematic do
         to eq(schematic.raw_engine_matrix)
     end
   end
-
 end
 
 describe SchematicCell do
   let(:row) { 0 }
   let(:column) { 0 }
   let(:value) { '.' }
-  let(:schematic_cell) { SchematicCell.new(row: row, column: column, value: value) }
+  let(:max_coordinate) { [100, 100] }
+  let(:schematic_cell) { SchematicCell.new(row: row,
+                                           column: column,
+                                           max_coordinate: max_coordinate,
+                                           value: value) }
   subject { schematic_cell }
 
   describe "#determine_cell_type!" do
@@ -139,6 +149,126 @@ describe SchematicCell do
         end
       end
     end
+  end
 
+  describe "#coordinates" do
+    let(:row) { 6 }
+    let(:column) { 9 }
+
+    it "returns its own corrdinates" do
+      expect(subject.coordinates).to eq([6, 9])
+    end
+  end
+
+  describe "#row_neighbor_coordinates" do
+    context "matrix boundaries" do
+      context "column boundaries" do
+        context "column neighbor coordinates less than 0" do
+          let(:row) { 0 }
+          let(:column) { 0 }
+
+          it "returns neighbors, with min coord violations not included" do
+            expect(subject.row_neighbor_coordinates).to eq(
+              [subject.coordinates, [0, 1]]
+            )
+          end
+
+        context "column neighbor coordinates greater than max_coordinate" do
+            let(:max_coordinate) { [5, 8] }
+            let(:row) { 5 }
+            let(:column) { 8 }
+
+            it "returns neighbors, with max coord violations not included" do
+              expect(subject.row_neighbor_coordinates).to eq(
+                [[5, 7], subject.coordinates]
+              )
+            end
+          end
+        end
+      end
+
+      context "row boundaries" do
+        context "row neighbor coordinates less than 0" do
+          let(:row) { 0 }
+          let(:column) { 0 }
+
+          it "returns neighbors, with min coord violations not included" do
+            expect(subject.row_neighbor_coordinates(-1)).to eq([])
+          end
+
+        context "column neighbor coordinates greater than max_coordinate" do
+            let(:max_coordinate) { [5, 8] }
+            let(:row) { 5 }
+            let(:column) { 8 }
+
+            it "returns neighbors, with max coord violations not included" do
+              expect(subject.row_neighbor_coordinates(6)).to eq([])
+            end
+          end
+        end
+      end
+    end
+
+    context "given no neighbor_row arg" do
+      let(:row) { 3 }
+      let(:column) { 2 }
+
+      it "returns an array of all the the cell's row's neighbors (itself included)" do
+        expect(subject.row_neighbor_coordinates).to eq(
+          [[3, 1], subject.coordinates, [3, 3]]
+        )
+      end
+    end
+
+    context "given a neighbor_row arg" do
+      let(:row) { 3 }
+      let(:column) { 2 }
+
+      it "returns and array of possible row neigbors for that row" do
+        expect(subject.row_neighbor_coordinates(20)).to eq(
+          [[20, 1], [20, 2], [20, 3]]
+        )
+      end
+    end
+  end
+
+  describe "#all_neighbor_coordinates" do
+      let(:row) { 3 }
+      let(:column) { 6 }
+
+      it "returns an array of all possible neighbor coords (itself included)" do
+        expect(subject.all_neighbor_coordinates).to eq([
+          [2, 5], [2, 6], [2, 7],
+          [3, 5], subject.coordinates, [3, 7],
+          [4, 5], [4, 6], [4, 7],
+        ])
+      end
+
+      context "matrix boundaries" do
+        context "given neighbor coordinates contain values less than 0" do
+          let(:row) { 0 }
+          let(:column) { 0 }
+
+          it "returns only valid neighbors" do
+            expect(subject.all_neighbor_coordinates).to eq([
+               subject.coordinates, [0, 1],
+               [1, 0], [1, 1],
+            ])
+          end
+        end
+
+        context "given neighbor coordinates contain values greater than max_coordinates" do
+          let(:max_coordinate) { [6, 9] }
+          let(:row) { 6 }
+          let(:column) { 9 }
+
+          it "returns only valid neighbors" do
+            expect(subject.all_neighbor_coordinates).to eq([
+              [5, 8], [5, 9],
+              [6, 8], subject.coordinates,
+            ])
+          end
+        end
+      end
   end
 end
