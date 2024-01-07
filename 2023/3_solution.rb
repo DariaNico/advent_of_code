@@ -48,17 +48,27 @@ class Schematic
   def initialize(filename = "3_input.txt")
     @engine_matrix = File.readlines(filename).map { |row| row.strip.split('') }
   end
+end
 
-  def slot_type(string_slot)
-    case string_slot
-    when '.'
-      :blank
-    when /[0-9]/
-      :number
-    when /[a-zA-Z]/
-      :symbol
-    else
-      :symbol
-    end
+class SchematicCell
+  attr_reader :value, :row, :column, :cell_type
+
+  def initialize(row:, column:, value:)
+    @value = value
+    @row = row
+    @column = column
+  end
+
+  def determine_cell_type!
+    @cell_type = case value
+                 when '.'
+                   :blank
+                 when /[0-9]/
+                   :number
+                 when /[a-zA-Z]/
+                   :symbol
+                 else
+                   :symbol
+                 end
   end
 end
