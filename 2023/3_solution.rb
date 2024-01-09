@@ -50,6 +50,7 @@ class Schematic
     @max_coordinate = [raw_engine_matrix.length - 1, raw_engine_matrix.first.length - 1]
 
     parse_engine_matrix!
+    populate_matrix_neighbors!
   end
 
   def parse_engine_matrix!
@@ -57,6 +58,17 @@ class Schematic
       row.each_with_index.map do |col, col_i|
         create_cell(coordinates: [row_i, col_i],
                     value: col)
+      end
+    end
+  end
+
+  def populate_matrix_neighbors!
+    engine_matrix.flatten.each do |schematic_cell|
+      if [:number, :symbol].include?(schematic_cell.cell_type)
+        neighbors = schematic_cell.
+          all_neighbor_coordinates.
+          map { |coordinates| find_cell(coordinates) }
+        schematic_cell.neighbors = neighbors.compact
       end
     end
   end
