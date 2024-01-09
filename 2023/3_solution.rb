@@ -48,6 +48,8 @@ class Schematic
   def initialize(filename = "3_input.txt")
     @raw_engine_matrix = File.readlines(filename).map { |row| row.strip.split('') }
     @max_coordinate = [raw_engine_matrix.length - 1, raw_engine_matrix.first.length - 1]
+
+    parse_engine_matrix!
   end
 
   def parse_engine_matrix!
@@ -57,6 +59,10 @@ class Schematic
                     value: col)
       end
     end
+  end
+
+  def find_cell(coordinates)
+    engine_matrix[coordinates.first][coordinates.last]
   end
 
   def create_cell(coordinates:, max_coord: max_coordinate, value: '.')
@@ -69,12 +75,14 @@ end
 
 class SchematicCell
   attr_reader :cell_type, :column, :max_coordinate, :row, :value
+  attr_accessor :neighbors
 
   def initialize(row:, column:, value:, max_coordinate:)
     @column = column
     @max_coordinate = max_coordinate
     @row = row
     @value = value
+    determine_cell_type!
   end
 
   def determine_cell_type!
@@ -95,17 +103,17 @@ class SchematicCell
   end
 
   def row_neighbor_coordinates(neighbor_row = row)
-    ((column - 1)..(column + 1)).map do |neighbor_col|
+    ((column - 1)..(column + 1)).map { |neighbor_col|
       if row_valid?(neighbor_row) && column_valid?(neighbor_col)
         [neighbor_row, neighbor_col]
       end
-    end.compact
+    }.compact
   end
 
   def all_neighbor_coordinates
-    ((row - 1)..(row + 1)).map do |neighbor_row|
+    ((row - 1)..(row + 1)).map { |neighbor_row|
       row_neighbor_coordinates(neighbor_row)
-    end.flatten(1)
+    }.flatten(1)
   end
 
   def similar_to?(schematic_cell)
