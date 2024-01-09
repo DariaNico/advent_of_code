@@ -57,6 +57,52 @@ describe Schematic do
     end
   end
 
+  describe "#populate_matrix_neighbors!" do
+    context "given the engine_matrix is only blanks" do
+      let(:file_input) { [
+        "...",
+        "...",
+      ] }
+
+      it "does not populate any SchematicCell's neighbors" do
+        schematic.populate_matrix_neighbors!
+        expect(schematic.engine_matrix.flatten.map(&:neighbors).compact).to be_empty
+      end
+    end
+
+    context "given the engine_matrix contains numbers and symbols" do
+      let(:file_input) { [
+        "1...",
+        "./..",
+      ] }
+
+      let(:cell_0_0) { schematic.create_cell(value: '1',
+                                             coordinates: [0, 0]) }
+      let(:cell_1_1) { schematic.create_cell(value: '/',
+                                             coordinates: [1, 1]) }
+      let(:cell_0_1) { schematic.create_cell(coordinates: [0, 1]) }
+      let(:cell_0_2) { schematic.create_cell(coordinates: [0, 2]) }
+      let(:cell_1_0) { schematic.create_cell(coordinates: [1, 0]) }
+      let(:cell_1_2) { schematic.create_cell(coordinates: [1, 2]) }
+
+
+      it "the number and symbol cell's neighbors" do
+        expected_neighbors = [
+          [cell_0_0, cell_0_1, cell_1_0, cell_1_1],
+          [cell_0_0, cell_0_1, cell_0_2, cell_1_0, cell_1_1, cell_1_2]
+        ].flatten
+
+        schematic.populate_matrix_neighbors!
+        matrix_neighbors = schematic.engine_matrix.flatten.
+          map(&:neighbors).flatten.compact
+
+        expect(matrix_neighbors.
+               zip(expected_neighbors).
+               all? { |a, b| a.similar_to?(b) }).to be_truthy
+      end
+    end
+  end
+
   describe "#find_cell" do
     let(:file_input) { [
       ".1...",
