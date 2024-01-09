@@ -56,6 +56,25 @@ describe Schematic do
         to eq(schematic.raw_engine_matrix)
     end
   end
+
+  describe "#find_cell" do
+    let(:file_input) { [
+      ".1...",
+      ".7.*.",
+      "./...",
+      "40.4%",
+    ] }
+
+    it "returns the schematic_cell at the coordinate given" do
+      found_cell = schematic.find_cell([1,1])
+      test_cell = SchematicCell.new(row: 1,
+                                    column: 1,
+                                    max_coordinate: [3, 4],
+                                    value: '7')
+      expect(test_cell.similar_to?(found_cell)).to be_truthy
+
+    end
+  end
 end
 
 describe SchematicCell do
