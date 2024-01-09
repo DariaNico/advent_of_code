@@ -53,12 +53,17 @@ class Schematic
   def parse_engine_matrix!
     @engine_matrix = raw_engine_matrix.each_with_index.map do |row, row_i|
       row.each_with_index.map do |col, col_i|
-        SchematicCell.new(row: row_i,
-                          column: col_i,
-                          value: col,
-                          max_coordinate: max_coordinate)
+        create_cell(coordinates: [row_i, col_i],
+                    value: col)
       end
     end
+  end
+
+  def create_cell(coordinates:, max_coord: max_coordinate, value: '.')
+    SchematicCell.new(row: coordinates.first,
+                      column: coordinates.last,
+                      value: value,
+                      max_coordinate: max_coord)
   end
 end
 
@@ -101,6 +106,12 @@ class SchematicCell
     ((row - 1)..(row + 1)).map do |neighbor_row|
       row_neighbor_coordinates(neighbor_row)
     end.flatten(1)
+  end
+
+  def similar_to?(schematic_cell)
+    schematic_cell.value == value &&
+    schematic_cell.coordinates == coordinates &&
+    schematic_cell.max_coordinate == max_coordinate
   end
 
   private
