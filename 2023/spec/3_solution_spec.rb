@@ -298,42 +298,114 @@ describe SchematicCell do
   end
 
   describe "#all_neighbor_coordinates" do
-      let(:row) { 3 }
-      let(:column) { 6 }
+    let(:row) { 3 }
+    let(:column) { 6 }
 
-      it "returns an array of all possible neighbor coords (itself included)" do
-        expect(subject.all_neighbor_coordinates).to eq([
-          [2, 5], [2, 6], [2, 7],
-          [3, 5], subject.coordinates, [3, 7],
-          [4, 5], [4, 6], [4, 7],
-        ])
+    it "returns an array of all possible neighbor coords (itself included)" do
+      expect(subject.all_neighbor_coordinates).to eq([
+        [2, 5], [2, 6], [2, 7],
+        [3, 5], subject.coordinates, [3, 7],
+        [4, 5], [4, 6], [4, 7],
+      ])
+    end
+
+    context "matrix boundaries" do
+      context "given neighbor coordinates contain values less than 0" do
+        let(:row) { 0 }
+        let(:column) { 0 }
+
+        it "returns only valid neighbors" do
+          expect(subject.all_neighbor_coordinates).to eq([
+            subject.coordinates, [0, 1],
+            [1, 0], [1, 1],
+          ])
+        end
       end
 
-      context "matrix boundaries" do
-        context "given neighbor coordinates contain values less than 0" do
-          let(:row) { 0 }
-          let(:column) { 0 }
+      context "given neighbor coordinates contain values greater than max_coordinates" do
+        let(:max_coordinate) { [6, 9] }
+        let(:row) { 6 }
+        let(:column) { 9 }
 
-          it "returns only valid neighbors" do
-            expect(subject.all_neighbor_coordinates).to eq([
-               subject.coordinates, [0, 1],
-               [1, 0], [1, 1],
-            ])
+        it "returns only valid neighbors" do
+          expect(subject.all_neighbor_coordinates).to eq([
+            [5, 8], [5, 9],
+            [6, 8], subject.coordinates,
+          ])
+        end
+      end
+    end
+  end
+
+  describe "#part_number?" do
+    let(:symbol_neighbor) { SchematicCell.new(row: row + 1,
+                                              column: column + 1,
+                                              max_coordinate: max_coordinate,
+                                              value: '{') }
+    let(:number_neighbor) { SchematicCell.new(row: row,
+                                              column: column + 1,
+                                              max_coordinate: max_coordinate,
+                                              value: '8') }
+    let(:blank_neighbor) { SchematicCell.new(row: row + 1,
+                                             column: column,
+                                             max_coordinate: max_coordinate,
+                                             value: '.') }
+    let(:test_neighbors) { [blank_neighbor, number_neighbor, symbol_neighbor] }
+
+    before(:each) do
+      subject.neighbors = test_neighbors
+    end
+
+    context "given the subject is a blank cell_type" do
+      let(:value) { '.' }
+
+      it "returns false regardless of neighbors" do
+        expect(subject.part_number?).to be_falsey
+      end
+    end
+
+    context "given the subject is a symbol cell_type" do
+      let(:value) { '-' }
+
+      it "returns false regardless of neighbors" do
+        expect(subject.part_number?).to be_falsey
+      end
+    end
+
+    context "given the subject is a number cell_type" do
+      let(:value) { '8' }
+
+      context "given its neighbors contain a least one symbol cell" do
+        let(:test_neighbors) { [blank_neighbor, number_neighbor, symbol_neighbor] }
+
+        it "returns true" do
+          expect(subject.part_number?).to be_truthy
+        end
+      end
+
+      context "given its neighbors contain no symbol cells" do
+        let(:test_neighbors) { [blank_neighbor, number_neighbor] }
+
+        context "given it has a part_number_value" do
+          before do
+            subject.part_number_value = 819
+          end
+
+          it "returns true" do
+            expect(subject.part_number?).to be_truthy
           end
         end
 
-        context "given neighbor coordinates contain values greater than max_coordinates" do
-          let(:max_coordinate) { [6, 9] }
-          let(:row) { 6 }
-          let(:column) { 9 }
+        context "given it has no part_number_value" do
+          before do
+            subject.part_number_value = nil
+          end
 
-          it "returns only valid neighbors" do
-            expect(subject.all_neighbor_coordinates).to eq([
-              [5, 8], [5, 9],
-              [6, 8], subject.coordinates,
-            ])
+          it "returns false" do
+            expect(subject.part_number?).to be_falsey
           end
         end
       end
+    end
   end
 end

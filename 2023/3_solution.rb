@@ -87,7 +87,7 @@ end
 
 class SchematicCell
   attr_reader :cell_type, :column, :max_coordinate, :row, :value
-  attr_accessor :neighbors
+  attr_accessor :neighbors, :part_number_value
 
   def initialize(row:, column:, value:, max_coordinate:)
     @column = column
@@ -133,6 +133,13 @@ class SchematicCell
     schematic_cell.coordinates == coordinates &&
     schematic_cell.max_coordinate == max_coordinate
   end
+
+  def part_number?
+    part_number_value ||
+      cell_type == :number &&
+      neighbors.any? { |neighbor| neighbor.cell_type == :symbol }
+  end
+
 
   private
 
