@@ -83,6 +83,41 @@ class Schematic
                       value: value,
                       max_coordinate: max_coord)
   end
+
+  def get_part_number_value(number_cell)
+    if !!number_cell.part_number_value
+      number_cell.part_number_value
+    elsif number_cell.part_number? && number_cell.part_number_value.nil?
+      left_cell = number_cell.left_neighbor
+      right_cell = number_cell.right_neighbor
+
+      number_value = number_cell.value
+      cells_to_update = [number_cell]
+
+      while left_cell && left_cell.cell_type == :number do
+        number_value = "#{left_cell.value}#{number_value}"
+        cells_to_update << left_cell
+        left_cell = left_cell.left_neighbor
+      end
+
+      while right_cell && right_cell.cell_type == :number do
+        number_value = "#{number_value}#{right_cell.value}"
+        cells_to_update << right_cell
+        right_cell = right_cell.right_neighbor
+      end
+
+      number_value = number_value.to_i
+      update_cells_part_number_value(cells_to_update, number_value)
+
+      number_value
+    end
+  end
+
+  def update_cells_part_number_value(cells, part_number_value)
+    cells.each do |cell|
+      cell.part_number_value = part_number_value
+    end
+  end
 end
 
 class SchematicCell
@@ -132,6 +167,18 @@ class SchematicCell
     schematic_cell.value == value &&
     schematic_cell.coordinates == coordinates &&
     schematic_cell.max_coordinate == max_coordinate
+  end
+
+  def left_neighbor
+    neighbors.select { |neighbor|
+      neighbor.coordinates == [row, column - 1]
+    }.first
+  end
+
+  def right_neighbor
+    neighbors.select { |neighbor|
+      neighbor.coordinates == [row, column + 1]
+    }.first
   end
 
   def part_number?

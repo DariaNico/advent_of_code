@@ -121,6 +121,68 @@ describe Schematic do
 
     end
   end
+
+  describe "#find_part_number_value" do
+    let(:file_input) { [
+      "./....",
+      "4040%.",
+      "....5.",
+      "99999.",
+    ] }
+
+    context "given a cell is a part_number" do
+      context "given cell already has a part_number_value" do
+        let(:number_cell) { schematic.find_cell([1, 1]) }
+        before do
+          number_cell.part_number_value = "fake val"
+        end
+
+        it "just returns the part_number_value without re-calculating" do
+          expect(schematic.get_part_number_value(number_cell)).to eq("fake val")
+        end
+
+      end
+
+      context "given cell has number row neighbors on both sides" do
+        let(:number_cell) { schematic.find_cell([1, 1]) }
+
+        it "returns the row neigbors number value and updates all the number neighbor cells with the part_number_value" do
+          updateable_cells = [[1,0], [1,1], [1,2], [1,3]].
+            map { |coord| schematic.find_cell(coord) }
+          non_updateable_cells = [[1,4], [1,5]].
+            map { |coord| schematic.find_cell(coord) }
+
+          expect(schematic.get_part_number_value(number_cell)).to eq(4040)
+          expect(updateable_cells.
+                 all? { |cell| cell.part_number_value == 4040 }).to be_truthy
+          expect(non_updateable_cells.
+                 any? { |cell| cell.part_number_value == 4040 }).to be_falsey
+
+        end
+
+      end
+
+      context "given cell has no number row neighbors but column neighbors" do
+        let(:number_cell) { schematic.find_cell([2, 4]) }
+
+        it "returns the cell's number value and updates just the cell" do
+          expect(schematic.get_part_number_value(number_cell)).to eq(5)
+          expect(schematic.find_cell(
+            [number_cell.row + 1, number_cell.column]
+          ).part_number_value).not_to eq(5)
+        end
+      end
+    end
+
+    context "given a not a part_number" do
+      let(:number_cell) { schematic.find_cell([3, 3]) }
+
+      it "returns nil and does not update any cells" do
+        expect(schematic.get_part_number_value(number_cell)).to be_nil
+        expect(number_cell.part_number_value).to be_nil
+      end
+    end
+  end
 end
 
 describe SchematicCell do
